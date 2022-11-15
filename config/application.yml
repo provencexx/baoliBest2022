@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: transformers
+    version: 0.1.0
+    show: true
+  output:
+    ansi:
+      enabled: DETECT
+  aop:
+    auto: true
+    proxy-target-class: true
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+logging:
+  appname: transformers
+  config: ./config/logback.xml
+filePath: ./config/config.json
+checkLoginFilePath: ./config/config.json
+allPersonPath: ./config/allPerson.json
+miaoshaTime: 19:05:00:010
+productId: 4766000
+priceList: "[180]"
+theaterId: ""
+cookies: "Hm_lvt_0cb4627679a11906d6bf0ced685dc014=1667744089; acw_tc=76b20f8616680099184407829e3d4d184e50c7c282257ede211994afc0bafb; Hm_lpvt_0cb4627679a11906d6bf0ced685dc014=1668009924"
+totalMod: 3
+server:
+  port: 9093

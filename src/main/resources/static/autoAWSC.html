@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="https://g.alicdn.com/AWSC/AWSC/awsc.js"></script>
+</head>
+<body>
+<div id="nc"></div>
+<script>
+    // 实例化nc
+    AWSC.use("nc", function (state, module) {
+        // 初始化
+        window.nc = module.init({
+            // 应用类型标识。它和使用场景标识（scene字段）一起决定了滑动验证的业务场景与后端对应使用的策略模型。您可以在阿里云验证码控制台的配置管理页签找到对应的appkey字段值，请务必正确填写。
+            appkey: "FFFF0N00000000009D3A",
+            //使用场景标识。它和应用类型标识（appkey字段）一起决定了滑动验证的业务场景与后端对应使用的策略模型。您可以在阿里云验证码控制台的配置管理页签找到对应的scene值，请务必正确填写。
+            scene: "nc_login_h5",
+            // 声明滑动验证需要渲染的目标ID。
+            renderTo: "nc",
+            //前端滑动验证通过时会触发该回调参数。您可以在该回调参数中将会话ID（sessionId）、签名串（sig）、请求唯一标识（token）字段记录下来，随业务请求一同发送至您的服务端调用验签。
+            success: function (data) {
+                window.console && console.log(data.sessionId)
+                window.console && console.log(data.sig)
+                window.console && console.log(data.token)
+
+                $.post("/api/baoli/addAWSCToken",{
+                    "sessionId":data.sessionId,
+                    "sig":data.sig,
+                    "token":data.token
+                },function(result){
+                    window.nc.reset();
+                    setTimeout(function(){
+                        slide('nc_1_n1z');
+                    }, Math.floor(Math.random()*50)+200);
+                });
+            },
+            // 滑动验证失败时触发该回调参数。
+            fail: function (failCode) {
+                window.console && console.log("fail : " + failCode)
+                window.location.reload();
+            },
+            // 验证码加载出现异常时触发该回调参数。
+            error: function (errorCode) {
+                window.console && console.log(errorCode);
+                window.location.reload();
+            }
+        });
+
+    })
+
+    function slide (id) {
+        var slider    = document.getElementById(id),
+            container = slider.parentNode;
+
+        var rect = slider.getBoundingClientRect(),
+            x0          = rect.x || rect.left,
+            y0          = rect.y || rect.top,
+            w           = container.getBoundingClientRect().width,
+            x1          = x0 + w,
+            y1          = y0;
+
+        var mousedown = document.createEvent("MouseEvents");
+        mousedown.initMouseEvent("mousedown", true, true, window, 0,
+            x0, y0, x0, y0, false, false, false, false, 0, null);
+        slider.dispatchEvent(mousedown);
+
+        var mousemove = document.createEvent("MouseEvents");
+        mousemove.initMouseEvent("mousemove", true, true, window, 0,
+            x1, y1, x1, y1, false, false, false, false, 0, null);
+        slider.dispatchEvent(mousemove);
+
+        /*var mouseup = document.createEvent("MouseEvents");
+        mouseup.initMouseEvent("mouseup", true, true, window, 0,
+            x1, y1, x1, y1, false, false, false, false, 0, null);
+        slider.dispatchEvent(mouseup);*/
+    }
+
+    // setTimeout(function(){
+    //     for(var i=0;i<100;i++){
+    //         setInterval(function(){
+    //             console.log(i);
+    //             slide('nc_1_n1z');
+    //         },50);
+    //     }
+    // }, 3000);
+
+    // var timesRun = 0;
+    // var interval = setInterval(function(){
+    //     console.log("timesRun : " + timesRun);
+    //     slide('nc_1_n1z');
+    //     timesRun++;
+    //     if (timesRun >= 100)
+    //         clearInterval(interval);
+    // }, Math.floor(Math.random()*50)+100);
+    setTimeout(function(){
+        slide('nc_1_n1z');
+    }, 1000);
+
+
+</script>
+</body>
+</html>
