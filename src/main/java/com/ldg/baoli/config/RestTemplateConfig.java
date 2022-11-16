@@ -3,6 +3,7 @@ package com.ldg.baoli.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,9 +29,9 @@ public class RestTemplateConfig {
 
         RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
         restTemplate.getMessageConverters().set(1,new StringHttpMessageConverter(StandardCharsets.UTF_8));
-        restTemplate.getInterceptors()
-                // 默认使用短连接
-                .add(new ClientHttpRequestConnectionCloseInterceptor());
+//        restTemplate.getInterceptors()
+//                // 默认使用短连接
+//                .add(new ClientHttpRequestConnectionCloseInterceptor());
 
         return restTemplate;
     }
@@ -43,6 +44,7 @@ public class RestTemplateConfig {
     public HttpClientBuilder httpClientBuilder() {
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
         httpClientBuilder.setConnectionManager(poolingConnectionManager());
+        httpClientBuilder.setConnectionManagerShared(true);
         return httpClientBuilder;
     }
 
@@ -56,8 +58,8 @@ public class RestTemplateConfig {
     @Bean
     public HttpClientConnectionManager poolingConnectionManager() {
         PoolingHttpClientConnectionManager poolingConnectionManager = new PoolingHttpClientConnectionManager();
-        poolingConnectionManager.setMaxTotal(5000);
-        poolingConnectionManager.setDefaultMaxPerRoute(5000);
+        poolingConnectionManager.setMaxTotal(500);
+        poolingConnectionManager.setDefaultMaxPerRoute(200);
         poolingConnectionManager.setValidateAfterInactivity(30000);
         return poolingConnectionManager;
     }

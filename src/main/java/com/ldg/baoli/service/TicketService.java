@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.ldg.baoli.exception.ServiceException;
-import com.ldg.baoli.util.TicketUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,10 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 
 @Slf4j
 @Service
@@ -36,6 +36,15 @@ public class TicketService {
             HttpEntity<String> entity = new HttpEntity<String>(httpHeaders);
             ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
             JSONObject jo = JSON.parseObject(responseEntity.getBody());
+            log.info("getProjectDetail out : " + jo.toJSONString());
+            if(StringUtils.equalsIgnoreCase("1005",jo.getString("code"))){
+                //频率太快
+                try {
+                    Thread.sleep(200);
+                }catch (Exception e){
+
+                }
+            }
             projectDetailJSON = jo.getJSONObject("data");
         }
         return projectDetailJSON;
@@ -49,6 +58,15 @@ public class TicketService {
                 HttpEntity<String> entity = new HttpEntity<String>(httpHeaders);
                 ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
                 JSONObject jo = JSON.parseObject(responseEntity.getBody());
+                log.info("getProjectSectionId out : " + JSON.toJSONString(jo,SerializerFeature.WriteMapNullValue));
+                if(StringUtils.equalsIgnoreCase("1005",jo.getString("code"))){
+                    //频率太快
+                    try {
+                        Thread.sleep(200);
+                    }catch (Exception e){
+
+                    }
+                }
                 projectDetailJSON = jo.getJSONObject("data");
             }catch (Exception se){
                 log.error("getProjectSectionId error : {}",se.getMessage(),se);
@@ -73,8 +91,25 @@ public class TicketService {
                 HttpEntity<String> entity = new HttpEntity<String>(httpHeaders);
                 ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
                 JSONObject jo = JSON.parseObject(responseEntity.getBody());
-                String cdnUrl = jo.getJSONObject("data").getJSONArray("showSectionDtos").getJSONObject(0).getString("appCdnPath");
+                log.info("getAllSeatInfo out : " + jo.toJSONString());
+                if(StringUtils.equalsIgnoreCase("1005",jo.getString("code"))){
+                    //频率太快
+                    try {
+                        Thread.sleep(200);
+                        continue;
+                    }catch (Exception e){
 
+                    }
+                }
+                String cdnUrl = null;
+                try {
+                    cdnUrl = jo.getJSONObject("data").getJSONArray("showSectionDtos").getJSONObject(0).getString("appCdnPath");
+                }catch (Exception e1){
+
+                }
+                if(StringUtils.isBlank(cdnUrl)){
+                    continue;
+                }
                 ResponseEntity<String> seatEntity = restTemplate.getForEntity(cdnUrl, String.class);
                 JSONObject seatjo = JSON.parseObject(seatEntity.getBody());
                 seatsArray = seatjo.getJSONArray("data");
@@ -108,9 +143,19 @@ public class TicketService {
                 ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity,
                         String.class);
                 JSONObject jo = JSON.parseObject(responseEntity.getBody());
+                if(StringUtils.equalsIgnoreCase("1005",jo.getString("code"))){
+                    log.error("getAvaliableSeatInfo out : {}",JSON.toJSONString(jo));
+                    //频率太快
+                    try {
+                        Thread.sleep(200);
+                        continue;
+                    }catch (Exception e){
+
+                    }
+                }
                 avaliableSeats = JSON.parseArray(jo.getString("data"),Boolean.class);
             }catch (Exception se){
-                log.error("getAllSeatInfo error : {}",se.getMessage(),se);
+                log.error("getAvaliableSeatInfo error : {}",se.getMessage(),se);
             }
         }
         for(int i =0;i< avaliableSeats.size();i++){
@@ -145,11 +190,19 @@ public class TicketService {
         jo.put("seatList",seatList);
         jo.put("sectionId",sectionId);
         jo.put("showId",showId);
-        log.error("postSeatInfo in : " + jo.toJSONString());
+        log.info("postSeatInfo in : " + jo.toJSONString());
         HttpEntity<String> entity = new HttpEntity<String>(jo.toJSONString(), httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, entity, String.class);
-        log.error("postSeatInfo out ： " + responseEntity.getBody());
+        log.info("postSeatInfo out ： " + responseEntity.getBody());
         JSONObject resultjo = JSON.parseObject(responseEntity.getBody());
+        if(StringUtils.equalsIgnoreCase("1005",resultjo.getString("code"))){
+            //频率太快
+            try {
+                Thread.sleep(200);
+            }catch (Exception e){
+
+            }
+        }
         return resultjo;
     }
 
